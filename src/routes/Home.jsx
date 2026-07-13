@@ -9,7 +9,17 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { useEffect, useState } from "react";
 
@@ -21,12 +31,13 @@ function Home() {
   useEffect로 데이터 조회 결과를 변수명 comments 할당
   */
   const getComments = async () => {
-    const q = query(collection(db, "comments"));
+    const q = query(collection(db, "comments"), orderBy("date", "desc"), limit(5));
 
-    const querySnapshot = await getDocs(q);
-    console.log(querySnapshot);
-    const commentsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setComments(commentsArray);
+    onSnapshot(q, querySnapshot => {
+      const commentsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      setComments(commentsArray);
+    });
   };
 
   useEffect(() => {
@@ -49,6 +60,7 @@ function Home() {
       });
       // console.log("다음 글이 추가되었습니다.: ", docRef.id);
       setComment("");
+      // setComments();
     } catch (e) {
       console.error("글 추가시 에러가 발생했습니다.", e);
     }
@@ -82,7 +94,10 @@ function Home() {
         {/* comments 배열의 값을 ListItem으로 출력 */}
         {comments.map(item => (
           <ListItem key={item.id} alignItems="flex-start" divider>
-            <ListItemText primary={item.comment} secondary={item.date.toDate().toLocaleString()} />
+            <ListItemText
+              primary={item.comment}
+              secondary={item.date?.toDate ? item.date.toDate().toLocaleString() : "작성시간 없음"}
+            />
           </ListItem>
         ))}
       </List>
