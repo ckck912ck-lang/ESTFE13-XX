@@ -1,10 +1,39 @@
-import { Box, Typography, TextField, Button, Divider } from "@mui/material";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Divider,
+  useScrollTrigger,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function Home() {
   const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+
+  /*
+  useEffect로 데이터 조회 결과를 변수명 comments 할당
+  */
+  const getComments = async () => {
+    const q = query(collection(db, "comments"));
+
+    const querySnapshot = await getDocs(q);
+    console.log(querySnapshot);
+    const commentsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setComments(commentsArray);
+  };
+
+  useEffect(() => {
+    getComments();
+  }, []);
+
+  console.log(comments);
 
   const handleChange = e => {
     setComment(e.target.value);
@@ -49,6 +78,14 @@ function Home() {
         </Button>
       </Box>
       <Divider sx={{ my: 3 }} />
+      <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+        {/* comments 배열의 값을 ListItem으로 출력 */}
+        {comments.map(item => (
+          <ListItem key={item.id} alignItems="flex-start" divider>
+            <ListItemText primary={item.comment} secondary={item.date.toDate().toLocaleString()} />
+          </ListItem>
+        ))}
+      </List>
     </>
   );
 }
