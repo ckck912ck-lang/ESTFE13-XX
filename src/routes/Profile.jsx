@@ -54,7 +54,7 @@ function Profile() {
       <List sx={{ width: "100%" }}>
         {/* comments 배열의 값을 ListItem으로 출력 */}
         {comments.map(item => (
-          <Comment key={item.id} item={item} isShown={userId === item.uid} />
+          <Comment key={item.id} item={item} isShown={true} />
         ))}
       </List>
     </>
